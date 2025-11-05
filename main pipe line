@@ -1,8 +1,8 @@
 import csv
 import os
 import statistics
-import weighted  # your existing weighted.py module
-import transform # select, project, sort, insert, delete
+import weightedd  # your existing weighted.py module
+import transforms # select, project, sort, insert, delete
 # ----------------------
 # Configuration
 # ----------------------
@@ -41,21 +41,28 @@ def menu():
         print("7. Exit")
 
         choice = input("Enter choice: ").strip()
+        while True:
+            try:
+                n = int(input("How many students to add? "))
+                break
+            except ValueError:
+                print("Invalid Choice. Try Again.")
+
 
         if choice == "1":
-            transform.add_data()
+            transforms.add_data()
         elif choice == "2":
-            valid_rows, _ = transform.clean_ingest()
+            valid_rows, _ = transforms.clean_ingest()
             if valid_rows:
                 print("\n📘 Valid rows:")
                 for row in valid_rows:
                     print(row)
         elif choice == "3":
-            transform.delete_data()
+            transforms.delete_data()
         elif choice == "4":
-            transform.select_column()
+            transforms.select_column()
         elif choice == "5":
-            transform.select_row()
+            transforms.select_row()
         elif choice == "6":
             while True:
                 print("\n📊 ANALYTICS MENU")
@@ -69,15 +76,15 @@ def menu():
                 sub = input("Select an option (a–f): ").lower().strip()
 
                 if sub == "a":
-                    weighted.compute_grades()
+                    weightedd.compute_grades()
                 elif sub == "b":
-                    weighted.grade_distribution()
+                    weightedd.grade_distribution()
                 elif sub == "c":
-                    weighted.percentiles()
+                    weightedd.percentiles()
                 elif sub == "d":
-                    weighted.outliers()
+                    weightedd.outliers()
                 elif sub == "e":
-                    weighted.improvement()
+                    weightedd.improvement()
                 elif sub == "f":
                     break
                 else:
