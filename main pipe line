@@ -41,12 +41,7 @@ def menu():
         print("7. Exit")
 
         choice = input("Enter choice: ").strip()
-        while True:
-            try:
-                n = int(input("How many students to add? "))
-                break
-            except ValueError:
-                print("Invalid Choice. Try Again.")
+        
 
 
         if choice == "1":
