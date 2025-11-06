@@ -89,7 +89,6 @@ def clean_ingest(filename=FILENAME):
     return valid_rows, bad_rows
 
 
-
 def save_to_csv(data, filename=FILENAME):
     """Append data to CSV, create header if file doesn't exist"""
     file_exists = os.path.exists(filename)
@@ -118,14 +117,7 @@ def add_data():
     Adds one or more students interactively with name validation (no numbers).
     """
     new_rows = []
-    while True:
-        try:
-            n = int(input("How many students to add? "))
-            break
-        except ValueError:
-            print("Invalid Choice. Try Again.")
-
-
+    n = int(input("How many students to add? "))
 
     for i in range(n):
         print(f"\n--- Student #{i+1} ---")
@@ -144,7 +136,7 @@ def add_data():
                     student.append(val)
                     break
 
-                # Validate names & section
+                 # Validate names & section
                 elif idx in [1, 2]:  # last_name, first_name
                     if val == "":
                         val = "none"
@@ -180,7 +172,6 @@ def add_data():
         new_rows.append(student)
 
     save_to_csv(new_rows)
-
 
 
 def delete_data(filename=FILENAME):
@@ -236,3 +227,78 @@ def select_row(filename=FILENAME):
             return
 
     print("❌ No student found with that ID.")
+
+
+# ----------------------
+# SORTING Feature
+# ----------------------
+def sort_data(filename=FILENAME):
+    """
+    Sort student data by any column in ascending or descending order.
+    Saves the sorted data back to the CSV file.
+    """
+    valid_rows, _ = clean_ingest(filename)
+    if not valid_rows:
+        print("⚠️ No valid data to sort.")
+        return
+
+    print("\n🔢 Available columns to sort by:")
+    for i, col in enumerate(HEADER):
+        print(f"{i+1}. {col}")
+
+    col_name = input("\nEnter column name to sort by: ").strip()
+    if col_name not in HEADER:
+        print("❌ Invalid column name.")
+        return
+
+    col_index = HEADER.index(col_name)
+
+    # Ask for sort order
+    print("\nSort order:")
+    print("1. Ascending (A→Z, 0→100)")
+    print("2. Descending (Z→A, 100→0)")
+    order = input("Enter choice (1 or 2): ").strip()
+
+    reverse = True if order == "2" else False
+
+    # Determine if column is numeric (indices 4-11) or text (0-3)
+    is_numeric = col_index in range(4, 12)
+
+    # Sort with proper handling of None values
+    def sort_key(row):
+        value = row[col_index]
+        
+        if is_numeric:
+            # For numeric columns, treat None as -infinity (so it appears first when ascending)
+            if value is None:
+                return float('-inf') if not reverse else float('inf')
+            return float(value)
+        else:
+            # For text columns, treat empty/none as empty string
+            if value is None or str(value).lower() == "none":
+                return ""
+            return str(value).lower()
+
+    try:
+        sorted_rows = sorted(valid_rows, key=sort_key, reverse=reverse)
+        
+        # Save sorted data
+        save_cleaned_csv(sorted_rows, filename)
+        
+        print(f"\n✅ Data sorted by '{col_name}' ({'descending' if reverse else 'ascending'})")
+        
+        # Display first 10 rows as preview
+        print(f"\n📋 Preview (first 10 rows):")
+        print("-" * 100)
+        print(f"{'ID':<12} {'Last Name':<15} {'First Name':<15} {'Section':<10} {col_name:<15}")
+        print("-" * 100)
+        
+        for row in sorted_rows[:10]:
+            display_val = row[col_index] if row[col_index] is not None else "N/A"
+            print(f"{row[0]:<12} {row[1]:<15} {row[2]:<15} {row[3]:<10} {str(display_val):<15}")
+        
+        if len(sorted_rows) > 10:
+            print(f"\n... and {len(sorted_rows) - 10} more rows")
+        
+    except Exception as e:
+        print(f"❌ Error during sorting: {e}")
