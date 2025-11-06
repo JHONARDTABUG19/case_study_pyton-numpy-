@@ -1,15 +1,4 @@
-# ------------------------------------------------------------
-# weight.py – Analytics Module for Student Grade Management
-# ------------------------------------------------------------
-# Features:
-#    Compute weighted grades for each student (NumPy optimized)
-#    Show grade distributions (A-F)
-#    Show top/bottom 10% (percentiles)
-#    Detect grade outliers (±2 SD)
-#    Show improvement (Final - Midterm)
-#
-# Author: [Your Name]
-# ------------------------------------------------------------
+
 
 import csv
 import os
