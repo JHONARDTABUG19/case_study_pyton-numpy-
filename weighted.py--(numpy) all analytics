@@ -1,76 +1,93 @@
 # ------------------------------------------------------------
-# weight.py — Analytics Module for Student Grade Management
+# weight.py – Analytics Module for Student Grade Management
 # ------------------------------------------------------------
 # Features:
-#   ✅ Compute weighted grades for each student (NumPy optimized)
-#   ✅ Show grade distributions (A-F)
-#   ✅ Show top/bottom 10% (percentiles)
-#   ✅ Detect grade outliers (±2 SD)
-#   ✅ Show improvement (Final - Midterm)
+#    Compute weighted grades for each student (NumPy optimized)
+#    Show grade distributions (A-F)
+#    Show top/bottom 10% (percentiles)
+#    Detect grade outliers (±2 SD)
+#    Show improvement (Final - Midterm)
 #
 # Author: [Your Name]
 # ------------------------------------------------------------
 
 import csv
 import os
-import numpy as np
+import numpy as np  # NumPy for efficient mathematical operations
 
 # ------------------------------------------------------------
 # CONFIG
 # ------------------------------------------------------------
 FILENAME = "ano.csv"
 
-QUIZ_WEIGHT = 0.20
-MIDTERM_WEIGHT = 0.30
-FINAL_WEIGHT = 0.40
-ATTENDANCE_WEIGHT = 0.10
+# Grade weights (must add up to 1.0 = 100%)
+QUIZ_WEIGHT = 0.20       # Quizzes are 20% of final grade
+MIDTERM_WEIGHT = 0.30    # Midterm is 30% of final grade
+FINAL_WEIGHT = 0.40      # Final exam is 40% of final grade
+ATTENDANCE_WEIGHT = 0.10 # Attendance is 10% of final grade
 
 
 # ------------------------------------------------------------
-# Helper — Compute weighted grade for one row
+# Helper – Compute weighted grade for one row
 # ------------------------------------------------------------
 def compute_weighted(row):
     """Return weighted grade given a student's record row (NumPy version)."""
     try:
-        # ✅ Convert quiz scores to float, ignoring None
+        #  Get all quiz scores, skip any that are None/empty
+        # This creates a list of only valid quiz scores
         quizzes = [
             float(row[f"quiz{i}"])
-            for i in range(1, 6)
-            if row[f"quiz{i}"] not in ("", "None", None)
+            for i in range(1, 6)  # Loop through quiz1 to quiz5
+            if row[f"quiz{i}"] not in ("", "None", None)  # Skip invalid values
         ]
+        # Convert list to NumPy array for faster calculations
         quizzes = np.array(quizzes, dtype=float)
 
+        # Get midterm score, use np.nan (Not a Number) if missing
         midterm = (
             float(row["midterm"]) if row["midterm"] not in ("", "None", None) else np.nan
         )
+        # Get final exam score, use np.nan if missing
         final = (
             float(row["final"]) if row["final"] not in ("", "None", None) else np.nan
         )
+        # Get attendance percentage, use np.nan if missing
         attendance = (
             float(row.get("attendance_percent", 0))
             if row.get("attendance_percent") not in ("", "None", None)
             else np.nan
         )
 
-        # ✅ Use nanmean to safely average even with NaN values
+        #  Calculate average quiz score, ignoring NaN values
+        # nanmean = "mean ignoring NaN" (average of valid scores only)
         avg_quiz = np.nanmean(quizzes) if quizzes.size > 0 else np.nan
+        
+        # Put all grade components in an array
         components = np.array(
             [avg_quiz, midterm, final, attendance], dtype=float
         )
 
+        # Put all weights in an array (matches order of components)
         weights = np.array(
             [QUIZ_WEIGHT, MIDTERM_WEIGHT, FINAL_WEIGHT, ATTENDANCE_WEIGHT], dtype=float
         )
 
-        # ✅ Handle missing (NaN) values gracefully
-        if np.isnan(components).all():
-            return None  # all missing
+        #  Handle case where all grades are missing
+        if np.isnan(components).all():  # .all() = all values are NaN
+            return None  # Can't calculate grade
+        
+        # Replace any NaN with 0.0 for calculation
         components = np.nan_to_num(components, nan=0.0)
 
+        # Calculate weighted grade using dot product
+        # Example: [80, 85, 90, 95] · [0.2, 0.3, 0.4, 0.1] = weighted average
         weighted = np.dot(components, weights)
+        
+        # Round to 2 decimal places and return
         return round(float(weighted), 2)
 
     except Exception:
+        # If any error occurs, return None
         return None
 
 
@@ -79,22 +96,31 @@ def compute_weighted(row):
 # ------------------------------------------------------------
 def compute_grades(filename=FILENAME):
     """Compute and display weighted grades for all students."""
+    # Check if file exists
     if not os.path.exists(filename):
-        print("⚠️ File not found.")
+        print(" File not found.")
         return
 
+    # Open CSV and read as dictionary (each row is a dict with column names as keys)
     with open(filename, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        print("\n📘 Weighted Grades:")
+        
+        # Print table header
+        print("\n Weighted Grades:")
         print("-" * 50)
         print(f"{'ID':<10}{'Name':<20}{'Weighted Grade':>15}")
         print("-" * 50)
 
+        # Process each student
         for row in reader:
+            # Calculate weighted grade for this student
             grade = compute_weighted(row)
+            # Format name as "Last, First"
             name = f"{row['last_name']}, {row['first_name']}"
 
+            # Display grade or "N/A" if calculation failed
             grade_display = f"{grade:.2f}" if grade is not None else "N/A"
+            # <10 = left-align in 10 chars, >15 = right-align in 15 chars
             print(f"{row['student_id']:<10}{name:<20}{grade_display:>15}")
 
         print("-" * 50)
@@ -102,72 +128,91 @@ def compute_grades(filename=FILENAME):
 
 def grade_distribution(filename=FILENAME):
     """Compute grade distribution (A–F) using NumPy."""
+    # Check if file exists
     if not os.path.exists(filename):
-        print("⚠️ File not found.")
+        print(" File not found.")
         return
 
+    # Read all grades into a NumPy array
     with open(filename, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
+        # List comprehension: get weighted grade for each student, skip None values
         grades = np.array(
             [compute_weighted(r) for r in reader if compute_weighted(r) is not None],
             dtype=float,
         )
 
+    # Count how many students fall into each grade range
     bins = {
-        "A": np.sum(grades >= 90),
-        "B": np.sum((grades >= 80) & (grades < 90)),
-        "C": np.sum((grades >= 70) & (grades < 80)),
-        "D": np.sum((grades >= 60) & (grades < 70)),
-        "F": np.sum(grades < 60),
+        "A": np.sum(grades >= 90),                    # A: 90-100
+        "B": np.sum((grades >= 80) & (grades < 90)),  # B: 80-89 (& means "and")
+        "C": np.sum((grades >= 70) & (grades < 80)),  # C: 70-79
+        "D": np.sum((grades >= 60) & (grades < 70)),  # D: 60-69
+        "F": np.sum(grades < 60),                     # F: below 60
     }
 
-    print("\n📊 Grade Distribution:")
+    # Display the distribution
+    print("\n Grade Distribution:")
     for k, v in bins.items():
         print(f"{k}: {v}")
 
 
 def percentiles(filename=FILENAME):
     """Show top and bottom 10% students using NumPy."""
+    # Check if file exists
     if not os.path.exists(filename):
-        print("⚠️ File not found.")
+        print(" File not found.")
         return
 
+    # Read entire CSV into memory as a list of dictionaries
     with open(filename, "r", encoding="utf-8") as f:
         reader = list(csv.DictReader(f))
 
+    # Create array of (student_id, grade) pairs for students with valid grades
     results = np.array(
         [(r["student_id"], compute_weighted(r)) for r in reader if compute_weighted(r) is not None],
-        dtype=object,
+        dtype=object,  # object type because we have mixed types (string ID, float grade)
     )
 
+    # Check if we have any valid data
     if results.size == 0:
-        print("⚠️ No valid grades to compute percentiles.")
+        print(" No valid grades to compute percentiles.")
         return
 
-    # Sort by grade descending
+    # Sort by grade (column 1) in descending order (highest first)
+    # argsort gives indices that would sort the array
+    # [::-1] reverses to get descending order
     results = results[np.argsort(results[:, 1].astype(float))[::-1]]
+    
     n = len(results)
+    # Get top 10% (at least 1 student)
     top = results[: max(1, n // 10)]
+    # Get bottom 10% (at least 1 student)
     bottom = results[-max(1, n // 10) :]
 
-    print("\n🏅 Top 10% Students:")
+    # Display top performers
+    print("\n Top 10% Students:")
     for sid, g in top:
         print(f"{sid}: {float(g):.2f}")
 
-    print("\n📉 Bottom 10% Students:")
+    # Display bottom performers
+    print("\n Bottom 10% Students:")
     for sid, g in bottom:
         print(f"{sid}: {float(g):.2f}")
 
 
 def outliers(filename=FILENAME):
     """Detect grades ±2 SD from mean (NumPy)."""
+    # Check if file exists
     if not os.path.exists(filename):
-        print("⚠️ File not found.")
+        print(" File not found.")
         return
 
+    # Read all student records
     with open(filename, "r", encoding="utf-8") as f:
         reader = list(csv.DictReader(f))
 
+    # Separate lists for grades and student IDs
     grades, ids = [], []
     for r in reader:
         g = compute_weighted(r)
@@ -175,21 +220,25 @@ def outliers(filename=FILENAME):
             grades.append(float(g))
             ids.append(r["student_id"])
         else:
-            print(f"⚠️ Skipping invalid record: {r['student_id']}")
+            print(f" Skipping invalid record: {r['student_id']}")
 
+    # Need at least 2 grades to calculate standard deviation
     if len(grades) < 2:
-        print("⚠️ Not enough data.")
+        print(" Not enough data.")
         return
 
+    # Convert to NumPy array for calculations
     grades = np.array(grades, dtype=float)
-    mean = np.mean(grades)
-    stdev = np.std(grades)
+    mean = np.mean(grades)    # Average grade
+    stdev = np.std(grades)    # Standard deviation (measures spread)
 
-    print(f"\n📊 Mean = {mean:.2f}, SD = {stdev:.2f}")
-    print("🚨 Outliers (±2 SD from mean):")
+    print(f"\n Mean = {mean:.2f}, SD = {stdev:.2f}")
+    print(" Outliers (±2 SD from mean):")
 
+    # Find students whose grades are more than 1.5 standard deviations from mean
     found = False
     for sid, g in zip(ids, grades):
+        # abs() = absolute value (distance from mean)
         if abs(g - mean) > 1.5 * stdev:
             print(f"  {sid}: {g:.2f}")
             found = True
@@ -200,29 +249,38 @@ def outliers(filename=FILENAME):
 
 def improvement(filename=FILENAME):
     """Compare midterm and final using NumPy."""
+    # Check if file exists
     if not os.path.exists(filename):
-        print("⚠️ File not found.")
+        print(" File not found.")
         return
 
+    # Lists to store midterm scores, final scores, and student IDs
     mids, finals, ids = [], [], []
 
+    # Read all student records
     with open(filename, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for r in reader:
             try:
+                # Get midterm score, use np.nan if missing
                 mid = float(r["midterm"]) if r["midterm"] not in ("", "None", None) else np.nan
+                # Get final score, use np.nan if missing
                 fin = float(r["final"]) if r["final"] not in ("", "None", None) else np.nan
                 mids.append(mid)
                 finals.append(fin)
                 ids.append(r["student_id"])
             except:
-                continue
+                continue  # Skip this student if error occurs
 
+    # Convert lists to NumPy arrays
     mids = np.array(mids, dtype=float)
     finals = np.array(finals, dtype=float)
+    # Calculate improvement: positive = improved, negative = declined
     diffs = finals - mids
 
-    print("\n📈 Improvement (Final - Midterm):")
+    # Display improvement for each student
+    print("\n Improvement (Final - Midterm):")
     for sid, diff in zip(ids, diffs):
-        if not np.isnan(diff):
+        if not np.isnan(diff):  # Only show if both midterm and final exist
+            # Show + sign for positive improvements, - for negative
             print(f"{sid}: {'+' if diff >= 0 else ''}{diff:.2f}")
