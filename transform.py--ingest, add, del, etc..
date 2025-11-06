@@ -34,6 +34,81 @@ def save_cleaned_csv(valid_rows, filename=FILENAME):
         writer.writerows(valid_rows)
     print(f"💾 Cleaned data saved to {filename}")
 
+def add_data():
+    """
+    Adds one or more students interactively with name validation (no numbers).
+    """
+    new_rows = []
+    n = int(input("How many students to add? "))
+
+    for i in range(n):
+        print(f"\n--- Student #{i+1} ---")
+        print("--- student_id is required ---\n")
+        student = []
+
+        for idx, h in enumerate(HEADER):
+            while True:
+                val = input(f"Enter {h} (leave blank for 'none'): ").strip()
+
+                # Validate student_id
+                # Validate student_id
+                if idx == 0:
+                    if not val:
+                        print("❌ student_id cannot be empty. Try again.")
+                        continue
+                    
+                    taken = False
+
+                    with open("ano.csv") as csvfile:
+                        reader = csv.DictReader(csvfile)
+
+                        for row in reader:
+                            if val == row["student_id"]:
+                                print("Student ID already taken, Try Again")
+                                taken = True
+                                break
+                    if taken:
+                        continue
+                    student.append(val)
+                    break
+
+                 # Validate names & section
+                elif idx in [1, 2]:  # last_name, first_name
+                    if val == "":
+                        val = "none"
+                    elif any(char.isdigit() for char in val):
+                        print("❌ Names cannot contain numbers. Try again.")
+                        continue
+                    student.append(val)
+                    break
+
+                # Section — allow letters and numbers
+                elif idx == 3:
+                    if val == "":
+                        val = "none"
+                    student.append(val)
+                    break
+
+                # Validate numeric fields (quiz–attendance)
+                elif idx in range(4, 12):
+                    if val == "" or val.lower() == "none":
+                        student.append("none")
+                        break
+                    try:
+                        num_val = float(val)
+                        if not (0 <= num_val <= 100):
+                            print("❌ Score must be between 0 and 100. Try again.")
+                            continue
+                        student.append(num_val)
+                        break
+                    except ValueError:
+                        print("❌ Invalid number. Enter 0–100 or leave blank for 'none'.")
+                        continue
+
+        new_rows.append(student)
+
+    save_to_csv(new_rows)
+
 def delete_data(filename=FILENAME):
     if not os.path.exists(filename):
         print("⚠️ File not found.")
