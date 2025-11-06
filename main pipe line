@@ -1,8 +1,8 @@
 import csv
 import os
 import statistics
-import weighted  # your existing weighted.py module
-import transform # select, project, sort, insert, delete
+import wit  # your existing weighted.py module
+import transformz # select, project, sort, insert, delete
 from ingest import clean_ingest # read csv file and validate rows
 # ----------------------
 # Configuration
@@ -27,7 +27,8 @@ HEADER = [
 ]
 
 
-valid_rows, _ = transform.clean_ingest("ano.csv", HEADER) # calls the clean_ingest function
+
+valid_rows, _ = transformz.clean_ingest("ano.csv", HEADER) # calls the clean_ingest function
 
 
 # ----------------------
@@ -55,9 +56,9 @@ def menu():
 
         # Option 1: Add new student records to the CSV file
         if choice == "1":
-            transform.add_data()
+            transformz.add_data()
         elif choice == "2":
-            valid_rows, _ = transform.clean_ingest()
+            valid_rows, _ = transformz.clean_ingest()
             if valid_rows:
                 print("\n📘 Valid rows:")
                 for row in valid_rows:
@@ -65,13 +66,13 @@ def menu():
         
         # Option 3: Remove a student record by their ID
         elif choice == "3":
-            transform.delete_data()
+            transformz.delete_data()
         elif choice == "4":
-            transform.select_column()
+            transformz.select_column()
         elif choice == "5":
-            transform.select_row()
+            transformz.select_row()
         elif choice == "6": # New call for sorting
-            transform.sort_data()
+            transformz.sort_data()
         elif choice == "7": # Analytics (shifted)
             while True:
                 print("\n ANALYTICS MENU")
@@ -87,15 +88,15 @@ def menu():
 
                 # Call different analytics functions based on choice
                 if sub == "a":
-                    weighted.compute_grades()
+                    wit.compute_grades()
                 elif sub == "b":
-                    weighted.grade_distribution()
+                    wit.grade_distribution()
                 elif sub == "c":
-                    weighted.percentiles()
+                    wit.percentiles()
                 elif sub == "d":
-                    weighted.outliers()
+                    wit.outliers()
                 elif sub == "e":
-                    weighted.improvement()
+                    wit.improvement()
                 elif sub == "f":
                     break  # Exit analytics menu, return to main menu
                 else:
