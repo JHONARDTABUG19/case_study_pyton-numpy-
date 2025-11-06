@@ -3,6 +3,7 @@ import os
 import statistics
 import weighted  # your existing weighted.py module
 import transform # select, project, sort, insert, delete
+from ingest import clean_ingest # read csv file and validate rows
 # ----------------------
 # Configuration
 # ----------------------
@@ -26,7 +27,7 @@ HEADER = [
 ]
 
 
-
+valid_rows, _ = transform.clean_ingest("ano.csv", HEADER) # calls the clean_ingest function
 
 
 # ----------------------
