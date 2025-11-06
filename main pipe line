@@ -1,8 +1,8 @@
 import csv
 import os
 import statistics
-import weightedd  # your existing weighted.py module
-import transforms # select, project, sort, insert, delete
+import weighted  # your existing weighted.py module
+import transform # select, project, sort, insert, delete
 # ----------------------
 # Configuration
 # ----------------------
@@ -37,28 +37,29 @@ def menu():
         print("3. Delete Student by ID")
         print("4. Select Header column")
         print("5. Project Student Record by Student ID")
-        print("6. Analytics and Reports")
-        print("7. Exit")
+        print("6. Sort Student Data") # New option
+        print("7. Analytics and Reports") # Shifted to 7
+        print("8. Exit") # Shifted to 8
 
         choice = input("Enter choice: ").strip()
-        
-
 
         if choice == "1":
-            transforms.add_data()
+            transform.add_data()
         elif choice == "2":
-            valid_rows, _ = transforms.clean_ingest()
+            valid_rows, _ = transform.clean_ingest()
             if valid_rows:
                 print("\n📘 Valid rows:")
                 for row in valid_rows:
                     print(row)
         elif choice == "3":
-            transforms.delete_data()
+            transform.delete_data()
         elif choice == "4":
-            transforms.select_column()
+            transform.select_column()
         elif choice == "5":
-            transforms.select_row()
-        elif choice == "6":
+            transform.select_row()
+        elif choice == "6": # New call for sorting
+            transform.sort_data()
+        elif choice == "7": # Analytics (shifted)
             while True:
                 print("\n📊 ANALYTICS MENU")
                 print("a. Compute Weighted Grades")
@@ -71,20 +72,20 @@ def menu():
                 sub = input("Select an option (a–f): ").lower().strip()
 
                 if sub == "a":
-                    weightedd.compute_grades()
+                    weighted.compute_grades()
                 elif sub == "b":
-                    weightedd.grade_distribution()
+                    weighted.grade_distribution()
                 elif sub == "c":
-                    weightedd.percentiles()
+                    weighted.percentiles()
                 elif sub == "d":
-                    weightedd.outliers()
+                    weighted.outliers()
                 elif sub == "e":
-                    weightedd.improvement()
+                    weighted.improvement()
                 elif sub == "f":
                     break
                 else:
                     print("❌ Invalid choice. Try again.")
-        elif choice == "7":
+        elif choice == "8": # Exit (shifted)
             print("👋 Exiting program.")
             break
         else:
