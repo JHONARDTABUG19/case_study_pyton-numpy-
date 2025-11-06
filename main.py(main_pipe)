@@ -1,9 +1,12 @@
 import csv
 import os
 import statistics
-import wit  # your existing weighted.py module
-import transformz # select, project, sort, insert, delete
+import analytics  # your existing weighted.py module
+import array_operations # select, project, sort, insert, delete
 from ingest import clean_ingest # read csv file and validate rows
+import reports
+import at_risk  # ✅ new module
+
 # ----------------------
 # Configuration
 # ----------------------
@@ -28,7 +31,7 @@ HEADER = [
 
 
 
-valid_rows, _ = transformz.clean_ingest("ano.csv", HEADER) # calls the clean_ingest function
+valid_rows, _ = array_operations.clean_ingest("ano.csv", HEADER) # calls the clean_ingest function
 
 
 # ----------------------
@@ -56,9 +59,9 @@ def menu():
 
         # Option 1: Add new student records to the CSV file
         if choice == "1":
-            transformz.add_data()
+            array_operations.add_data()
         elif choice == "2":
-            valid_rows, _ = transformz.clean_ingest()
+            valid_rows, _ = array_operations.clean_ingest()
             if valid_rows:
                 print("\n📘 Valid rows:")
                 for row in valid_rows:
@@ -66,46 +69,47 @@ def menu():
         
         # Option 3: Remove a student record by their ID
         elif choice == "3":
-            transformz.delete_data()
+            array_operations.delete_data()
         elif choice == "4":
-            transformz.select_column()
+            array_operations.select_column()
         elif choice == "5":
-            transformz.select_row()
+            array_operations.select_row()
         elif choice == "6": # New call for sorting
-            transformz.sort_data()
-        elif choice == "7": # Analytics (shifted)
+            array_operations.sort_data()
+        elif choice == "7":
             while True:
-                print("\n ANALYTICS MENU")
+                print("\n=== ANALYTICS AND REPORTS MENU ===")
                 print("a. Compute Weighted Grades")
                 print("b. Grade Distribution (A–F)")
                 print("c. Percentiles (Top/Bottom 10%)")
                 print("d. Outlier Detection (±2 SD)")
                 print("e. Improvement (Final vs Midterm)")
-                print("f. Back to Main Menu")
+                print("f. Summary Report")
+                print("g. At-Risk Students (Export CSV)")  # ✅ NEW
+                print("h. Back to Main Menu")
 
-                # Get submenu choice, convert to lowercase and trim spaces
-                sub = input("Select an option (a–f): ").lower().strip()
+                sub = input("Select an option (a–h): ").lower().strip()
 
-                # Call different analytics functions based on choice
                 if sub == "a":
-                    wit.compute_grades()
+                    analytics.compute_grades()
                 elif sub == "b":
-                    wit.grade_distribution()
+                    analytics.grade_distribution()
                 elif sub == "c":
-                    wit.percentiles()
+                    analytics.percentiles()
                 elif sub == "d":
-                    wit.outliers()
+                    analytics.outliers()
                 elif sub == "e":
-                    wit.improvement()
+                    analytics.improvement()
                 elif sub == "f":
-                    break  # Exit analytics menu, return to main menu
+                    reports.summary_report()
+                elif sub == "g":
+                    at_risk.export_at_risk()  # ✅ new call
+                elif sub == "h":
+                    break
                 else:
-                    print("❌ Invalid choice. Try again.")
-        elif choice == "8": # Exit (shifted)
-            print("👋 Exiting program.")
-            break
-        else:
-            print(" Invalid choice. Try again.")
+                    print("Invalid choice. Please try again.")
+
+
 
 
 # ----------------------
