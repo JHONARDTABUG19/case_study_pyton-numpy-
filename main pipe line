@@ -6,7 +6,10 @@ import transform # select, project, sort, insert, delete
 # ----------------------
 # Configuration
 # ----------------------
+# File name for the CSV database
 FILENAME = "ano.csv"
+
+# Column names for the student data
 HEADER = [
     "student_id",
     "last_name",
@@ -30,7 +33,12 @@ HEADER = [
 # Main Menu
 # ----------------------
 def menu():
+    """
+    Main menu function that displays options and handles user choices.
+    Runs in an infinite loop until user chooses to exit.
+    """
     while True:
+        # Display all menu options
         print("\n=== STUDENT CSV MENU ===")
         print("1. Add and Save Student(s)")
         print("2. Read CSV File")
@@ -41,8 +49,10 @@ def menu():
         print("7. Analytics and Reports") # Shifted to 7
         print("8. Exit") # Shifted to 8
 
+        # Get user input and remove extra spaces
         choice = input("Enter choice: ").strip()
 
+        # Option 1: Add new student records to the CSV file
         if choice == "1":
             transform.add_data()
         elif choice == "2":
@@ -51,6 +61,8 @@ def menu():
                 print("\n📘 Valid rows:")
                 for row in valid_rows:
                     print(row)
+        
+        # Option 3: Remove a student record by their ID
         elif choice == "3":
             transform.delete_data()
         elif choice == "4":
@@ -61,7 +73,7 @@ def menu():
             transform.sort_data()
         elif choice == "7": # Analytics (shifted)
             while True:
-                print("\n📊 ANALYTICS MENU")
+                print("\n ANALYTICS MENU")
                 print("a. Compute Weighted Grades")
                 print("b. Grade Distribution (A–F)")
                 print("c. Percentiles (Top/Bottom 10%)")
@@ -69,8 +81,10 @@ def menu():
                 print("e. Improvement (Final vs Midterm)")
                 print("f. Back to Main Menu")
 
+                # Get submenu choice, convert to lowercase and trim spaces
                 sub = input("Select an option (a–f): ").lower().strip()
 
+                # Call different analytics functions based on choice
                 if sub == "a":
                     weighted.compute_grades()
                 elif sub == "b":
@@ -82,17 +96,18 @@ def menu():
                 elif sub == "e":
                     weighted.improvement()
                 elif sub == "f":
-                    break
+                    break  # Exit analytics menu, return to main menu
                 else:
                     print("❌ Invalid choice. Try again.")
         elif choice == "8": # Exit (shifted)
             print("👋 Exiting program.")
             break
         else:
-            print("❌ Invalid choice. Try again.")
+            print(" Invalid choice. Try again.")
 
 
 # ----------------------
 # Run Program
 # ----------------------
+# Start the program by calling the menu function
 menu()
